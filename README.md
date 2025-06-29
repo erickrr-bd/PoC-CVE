@@ -4,6 +4,7 @@ Repository for proofs of concept (PoC) for specific vulnerabilities. This projec
 
 ## Vulnerabilities (PoCs)
 
+- CVE-2021-44228: Log4Shell, also known as CVE-2021-44228, is a critical zero-day vulnerability in the Apache Log4j 2 library, a widely used Java logging framework. It allows for remote code execution (RCE) on affected systems.
 - CVE-2023-46604: Vulnerability that allows remote code execution (RCE) in specific versions of Apache ActiveMQ.
 
 ## Disclaimer
